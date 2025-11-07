@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -127,7 +128,69 @@ class CalificacionActivity : AppCompatActivity() {
         btnGuardar.setOnClickListener { guardarCalificacion() }
         btnEliminar.setOnClickListener { eliminarCalificacion() }
         btnConsultar.setOnClickListener { consultarCalificacion() }
-        btnVer.setOnClickListener { consultarCalificacion() }
+        btnVer.setOnClickListener { mostrarDatosEnDialog() } // Cambiado aquí
+    }
+
+    private fun mostrarDatosEnDialog() {
+        val alumnoPos = spnAlumno.selectedItemPosition
+        val materiaPos = spnMateria.selectedItemPosition
+
+        if (alumnoPos < 0 || materiaPos < 0) {
+            Toast.makeText(this, "Seleccione alumno y materia", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Obtener los datos seleccionados y escritos
+        val alumnoSeleccionado = spnAlumno.selectedItem.toString()
+        val materiaSeleccionada = spnMateria.selectedItem.toString()
+        val unidad1 = edtUnidad1.text.toString().ifEmpty { "0.0" }
+        val unidad2 = edtUnidad2.text.toString().ifEmpty { "0.0" }
+        val unidad3 = edtUnidad3.text.toString().ifEmpty { "0.0" }
+        val unidad4 = edtUnidad4.text.toString().ifEmpty { "0.0" }
+
+        // Calcular promedio
+        val promedio = calcularPromedio(unidad1, unidad2, unidad3, unidad4)
+
+        // Crear el mensaje para el AlertDialog
+        val mensaje = """
+            Alumno: $alumnoSeleccionado
+            Materia: $materiaSeleccionada
+            
+            Calificaciones:
+            • Unidad 1: $unidad1
+            • Unidad 2: $unidad2
+            • Unidad 3: $unidad3
+            • Unidad 4: $unidad4
+            
+            Promedio: $promedio
+        """.trimIndent()
+
+        // Crear y mostrar el AlertDialog
+        AlertDialog.Builder(this)
+            .setTitle("Datos de Calificaciones")
+            .setMessage(mensaje)
+            .setPositiveButton("Aceptar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNeutralButton("Editar") { dialog, _ ->
+                dialog.dismiss()
+                // El usuario puede seguir editando los campos
+            }
+            .create()
+            .show()
+    }
+
+    private fun calcularPromedio(u1: String, u2: String, u3: String, u4: String): String {
+        return try {
+            val calif1 = u1.toDouble()
+            val calif2 = u2.toDouble()
+            val calif3 = u3.toDouble()
+            val calif4 = u4.toDouble()
+            val promedio = (calif1 + calif2 + calif3 + calif4) / 4
+            String.format("%.2f", promedio)
+        } catch (e: NumberFormatException) {
+            "0.0"
+        }
     }
 
     private fun guardarCalificacion() {
@@ -262,6 +325,7 @@ class CalificacionActivity : AppCompatActivity() {
         edtUnidad3.text.clear()
         edtUnidad4.text.clear()
     }
+
     private fun configurarSpinners() {
         adaptadorAlumno = ArrayAdapter(this, android.R.layout.simple_spinner_item, mutableListOf<String>())
         adaptadorAlumno.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

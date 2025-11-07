@@ -53,8 +53,6 @@ class VerCalificacionesActivity : AppCompatActivity() {
                     it.textSize = 14f
                     it.setPadding(8, 12, 8, 12)
                 }
-
-                adaptadorAlumno.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -74,18 +72,18 @@ class VerCalificacionesActivity : AppCompatActivity() {
         adaptadorAlumno.clear()
 
         try {
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
                     val alumno = Alumno(
-                        cursor.getString(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getInt(4)
+                        cursor.getString(0), // matricula
+                        cursor.getString(1), // nombre
+                        cursor.getString(2), // email
+                        cursor.getString(3), // carrera
+                        cursor.getInt(4)     // semestre
                     )
                     listaAlumnos.add(alumno)
                     adaptadorAlumno.add("${alumno.matricula} - ${alumno.nombre}")
-                }
+                } while (cursor.moveToNext())
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Error al cargar alumnos: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -121,41 +119,26 @@ class VerCalificacionesActivity : AppCompatActivity() {
         // Crear un TextView personalizado para el mensaje
         val textView = TextView(this)
         textView.text = mensaje
-        textView.setTextColor(Color.WHITE)
+        textView.setTextColor(Color.BLACK) // Cambiado a negro para mejor legibilidad
         textView.textSize = 14f
         textView.setPadding(32, 32, 32, 32)
-        textView.setBackgroundColor(Color.BLACK)
+        textView.setBackgroundColor(Color.WHITE)
 
         // Configurar scroll por si el contenido es muy largo
         val scrollView = ScrollView(this)
-        scrollView.setBackgroundColor(Color.BLACK)
+        scrollView.setPadding(16, 16, 16, 16)
+        scrollView.setBackgroundColor(Color.WHITE)
         scrollView.addView(textView)
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("📊 Calificaciones de ${alumno.nombre}")
-            .setView(scrollView) // Usar nuestra vista personalizada
+            .setView(scrollView)
             .setPositiveButton("Cerrar") { dialog, _ ->
                 dialog.dismiss()
             }
             .setCancelable(true)
 
         val dialog = builder.create()
-
-        // Configurar el tema oscuro para el AlertDialog
-        dialog.setOnShowListener {
-            // Configurar fondo del dialog
-            dialog.window?.setBackgroundDrawableResource(android.R.color.black)
-
-            // Configurar título en blanco
-            val titleView = dialog.findViewById<TextView>(androidx.appcompat.R.id.alertTitle)
-            titleView?.setTextColor(Color.WHITE)
-
-            // Configurar botón en blanco
-            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            button.setTextColor(Color.WHITE)
-            button.setBackgroundColor(Color.DKGRAY)
-        }
-
         dialog.show()
     }
 
@@ -171,22 +154,25 @@ class VerCalificacionesActivity : AppCompatActivity() {
             WHERE c.matricula = ?
         """.trimIndent()
 
-        var cursor = conector.rawQuery(query, arrayOf(matricula))
+        var cursor: android.database.Cursor? = null
 
         try {
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
+            cursor = conector.rawQuery(query, arrayOf(matricula))
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    // Verificar que las columnas existen antes de acceder a ellas
                     val calificacion = CalificacionConMateria(
-                        cursor.getString(0), // matricula
-                        cursor.getString(1), // codigoM
-                        cursor.getDouble(2), // unidad1
-                        cursor.getDouble(3), // unidad2
-                        cursor.getDouble(4), // unidad3
-                        cursor.getDouble(5), // unidad4
-                        cursor.getString(6)  // nombre_materia
+                        matricula = cursor.getString(cursor.getColumnIndexOrThrow("matricula")),
+                        codigoM = cursor.getString(cursor.getColumnIndexOrThrow("codigoM")),
+                        unidad1 = cursor.getDouble(cursor.getColumnIndexOrThrow("unidad1")),
+                        unidad2 = cursor.getDouble(cursor.getColumnIndexOrThrow("unidad2")),
+                        unidad3 = cursor.getDouble(cursor.getColumnIndexOrThrow("unidad3")),
+                        unidad4 = cursor.getDouble(cursor.getColumnIndexOrThrow("unidad4")),
+                        nombreMateria = cursor.getString(cursor.getColumnIndexOrThrow("nombre_materia"))
                     )
                     calificaciones.add(calificacion)
-                }
+                } while (cursor.moveToNext())
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Error al obtener calificaciones: ${e.message}", Toast.LENGTH_SHORT).show()
