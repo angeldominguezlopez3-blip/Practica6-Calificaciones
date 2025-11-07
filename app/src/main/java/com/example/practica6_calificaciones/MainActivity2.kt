@@ -52,14 +52,14 @@ class MainActivity2 : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ VERIFICACIÓN CORREGIDA: Buscar si el usuario ya existe
+            // VERIFICACIÓN CORREGIDA: Buscar si el usuario ya existe
             val passwordExistente = conector?.getString("password_$usuario", null)
             if (passwordExistente != null) {
                 Toast.makeText(this, "El usuario '$usuario' ya existe", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // ✅ GUARDAR USUARIO CORRECTAMENTE
+            // GUARDAR USUARIO CORRECTAMENTE
             editor?.putString("password_$usuario", password) // Guardamos la contraseña
             editor?.putString("usuario_$usuario", usuario)   // Guardamos el nombre de usuario
 
@@ -71,7 +71,7 @@ class MainActivity2 : AppCompatActivity() {
             }
             editor?.putInt("imagen_$usuario", imagenId)
 
-            // ✅ Aplicar los cambios
+            // Aplicar los cambios
             editor?.apply()
 
             Toast.makeText(this, "Usuario '$usuario' registrado exitosamente", Toast.LENGTH_SHORT).show()

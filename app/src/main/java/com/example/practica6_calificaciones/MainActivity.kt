@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ VERIFICACIÓN MEJORADA: Buscar usuario por su clave única
+            // Buscar usuario por su clave única
             val passwordGuardada = conector?.getString("password_$usuario", null)
 
             if (passwordGuardada != null && passwordGuardada == password) {
